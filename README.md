@@ -1,0 +1,4 @@
+rcmp
+====
+
+compare file recursively
