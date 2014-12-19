@@ -27,11 +27,12 @@ public class RecursiveDirectoryComparer {
 
         visitor = new ComparingFileVisitor(d1.toPath(), d0.toPath());
         Files.walkFileTree(d1.toPath(), visitor);
-        // allDifferences.addAll(visitor.getDifferences().stream().filter(diff
-        // -> !allDifferences.contains(new Difference(diff.getRight(),
-        // diff.getLeft(), diff.getType()))).collect(Collectors.toList()));
-        allDifferences.addAll(visitor.getDifferences().stream().map(diff -> new Difference(diff.getRight(), diff.getLeft(), diff.getType())).collect(Collectors.toList()));
+        allDifferences.addAll(visitor.getDifferences().stream().map(RecursiveDirectoryComparer::reverseDifference).collect(Collectors.toList()));
         return allDifferences;
+    }
+
+    private static Difference reverseDifference(final Difference diff) {
+        return new Difference(diff.getRight(), diff.getLeft(), diff.getType());
     }
 
 }
