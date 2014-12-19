@@ -26,3 +26,6 @@ Result will be in `./build/install/rcmp/`
         MISSING:  [missing] <- /home/user0/src/rcmp_diff/src/main/java/nu/wasis/rcmp/compare/ComparisonResult.java
         CHECKSUM: /home/user0/src/rcmp/src/main/java/nu/wasis/rcmp/compare/RecursiveDirectoryComparer.java <-> /home/user0/src/rcmp_diff/src/main/java/nu/wasis/rcmp/compare/RecursiveDirectoryComparer.java
         CHECKSUM: /home/user0/src/rcmp/src/main/java/nu/wasis/rcmp/compare/ComparingFileVisitor.java <-> /home/user0/src/rcmp_diff/src/main/java/nu/wasis/rcmp/compare/ComparingFileVisitor.java
+
+## Wtf?
+Don't worry: It's just a simple test project for gradle.
