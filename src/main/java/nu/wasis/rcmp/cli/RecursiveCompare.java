@@ -1,12 +1,13 @@
 package nu.wasis.rcmp.cli;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.Set;
 
-import nu.wasis.rcmp.compare.ComparisonResult;
 import nu.wasis.rcmp.compare.RecursiveDirectoryComparer;
+import nu.wasis.rcmp.compare.result.Difference;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,6 +16,7 @@ import org.kohsuke.args4j.CmdLineParser;
 
 public class RecursiveCompare {
 
+    private static final PrintStream OUT = System.out;
     private static final Logger LOG = LogManager.getLogger();
 
     public static void main(final String... args) throws IOException {
@@ -33,24 +35,24 @@ public class RecursiveCompare {
         }
 
         if (!options.getD0().exists()) {
-            System.out.println("File d0 `" + options.getD0() + "' does not exist.");
+            OUT.println("File d0 `" + options.getD0() + "' does not exist.");
             return;
         }
         if (!options.getD1().exists()) {
-            System.out.println("File d1 `" + options.getD1() + "' does not exist.");
+            OUT.println("File d1 `" + options.getD1() + "' does not exist.");
             return;
         }
 
-        System.out.println("Comparing: \n\t" + options.getD0() + "\n\t" + options.getD1());
+        OUT.println("Comparing: \n\t" + options.getD0() + "\n\t" + options.getD1());
 
-        final ComparisonResult result = RecursiveDirectoryComparer.compareDirectories(options.getD0(), options.getD1());
-        if (result.isEqual()) {
-            System.out.println("Directories match.");
+        final Set<Difference> differences = RecursiveDirectoryComparer.compareDirectories(options.getD0(), options.getD1());
+        if (differences.isEmpty()) {
+            OUT.println("Directories match.");
         } else {
-            System.out.println("Directories do not match.");
-            System.out.println("Unmatched Files:");
-            for (final File file : result.getNotMatched()) {
-                System.out.println("\t" + file.getPath());
+            OUT.println("Directories do not match.");
+            OUT.println("Differences:");
+            for (final Difference diff : differences) {
+                OUT.println(diff);
             }
         }
     }
@@ -59,7 +61,7 @@ public class RecursiveCompare {
         final Writer stringWriter = new StringWriter();
         stringWriter.append("Usage: rcmp [options]\n");
         parser.printUsage(stringWriter, null);
-        System.out.println(stringWriter.toString());
+        OUT.println(stringWriter.toString());
     }
 
 }

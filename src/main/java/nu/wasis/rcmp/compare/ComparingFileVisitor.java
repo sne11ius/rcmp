@@ -1,6 +1,5 @@
 package nu.wasis.rcmp.compare;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
@@ -8,6 +7,9 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashSet;
 import java.util.Set;
+
+import nu.wasis.rcmp.compare.result.Difference;
+import nu.wasis.rcmp.compare.result.DifferenceType;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -20,7 +22,7 @@ public class ComparingFileVisitor implements FileVisitor<Path> {
     private final Path p0;
     private final Path p1;
 
-    private final Set<File> unmatchedFiles = new HashSet<>();
+    private final Set<Difference> differences = new HashSet<>();
 
     public ComparingFileVisitor(final Path p0, final Path p1) {
         this.p0 = p0;
@@ -32,7 +34,7 @@ public class ComparingFileVisitor implements FileVisitor<Path> {
         final Path p0Relative = p0.relativize(p0.resolve(path));
         final Path p1Relative = p1.resolve(p0Relative);
         if (!p1Relative.toFile().exists()) {
-            unmatchedFiles.add(path.toFile());
+            differences.add(new Difference(path.toFile(), null, DifferenceType.MISSING));
         } else {
             if (path.toFile().isDirectory()) {
                 LOG.error("Cannot compute checksum for directory: " + path.toFile().toString());
@@ -42,7 +44,7 @@ public class ComparingFileVisitor implements FileVisitor<Path> {
                 final long p0Checksum = FileUtils.checksumCRC32(path.toFile());
                 final long p1Checksum = FileUtils.checksumCRC32(p1Relative.toFile());
                 if (p0Checksum != p1Checksum) {
-                    unmatchedFiles.add(p1Relative.toFile());
+                    differences.add(new Difference(path.toFile(), p1Relative.toFile(), DifferenceType.CHECKSUM));
                 }
             }
         }
@@ -51,8 +53,8 @@ public class ComparingFileVisitor implements FileVisitor<Path> {
 
     @Override
     public FileVisitResult visitFileFailed(final Path path, final IOException exc) throws IOException {
-        unmatchedFiles.add(path.toFile());
-        return FileVisitResult.TERMINATE;
+        differences.add(new Difference(path.toFile(), null, DifferenceType.ERROR));
+        return FileVisitResult.CONTINUE;
     }
 
     @Override
@@ -65,8 +67,8 @@ public class ComparingFileVisitor implements FileVisitor<Path> {
         return FileVisitResult.CONTINUE;
     }
 
-    public Set<File> getUnmatchedFiles() {
-        return unmatchedFiles;
+    public Set<Difference> getDifferences() {
+        return differences;
     }
 
 }

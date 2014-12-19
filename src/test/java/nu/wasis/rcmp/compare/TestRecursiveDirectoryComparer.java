@@ -9,6 +9,10 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Set;
+
+import nu.wasis.rcmp.compare.result.Difference;
+import nu.wasis.rcmp.compare.result.DifferenceType;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -31,9 +35,9 @@ public class TestRecursiveDirectoryComparer {
         final File left = new File(baseDir, "/base0/emptyDir");
         final File right = new File(baseDir, "/base1/emptyDir");
 
-        final ComparisonResult compareDirectories = RecursiveDirectoryComparer.compareDirectories(left, right);
+        final Set<Difference> differences = RecursiveDirectoryComparer.compareDirectories(left, right);
 
-        assertTrue("Two empty dirs should always match.", compareDirectories.isEqual());
+        assertTrue("Two empty dirs should always match.", differences.isEmpty());
     }
 
     @Test
@@ -41,11 +45,12 @@ public class TestRecursiveDirectoryComparer {
         final File left = new File(baseDir, "/base0/containsFile");
         final File right = new File(baseDir, "/base1/emptyDir");
 
-        final File missingFile = new File(baseDir, "/base0/containsFile/file.file");
+        // final File missingFile = new File(baseDir,
+        // "/base0/containsFile/file.file");
 
-        final ComparisonResult compareDirectories = RecursiveDirectoryComparer.compareDirectories(left, right);
-        assertFalse("Left contains extra file.", compareDirectories.isEqual());
-        assertEquals("Missing file not correct.", new HashSet<File>(Arrays.asList(missingFile)), compareDirectories.getNotMatched());
+        final Set<Difference> differences = RecursiveDirectoryComparer.compareDirectories(left, right);
+        assertFalse("Left contains extra file.", differences.isEmpty());
+        assertEquals("Missing file not correct.", new HashSet<Difference>(Arrays.asList(new Difference(new File(left, "/file.file"), null, DifferenceType.MISSING))), differences);
     }
 
     @Test
@@ -53,11 +58,9 @@ public class TestRecursiveDirectoryComparer {
         final File left = new File(baseDir, "/base0/emptyDir");
         final File right = new File(baseDir, "/base1/containsFile");
 
-        final File missingFile = new File(baseDir, "/base1/containsFile/file.file");
-
-        final ComparisonResult compareDirectories = RecursiveDirectoryComparer.compareDirectories(left, right);
-        assertFalse("Right should contain extra file.", compareDirectories.isEqual());
-        assertEquals("Missing file not correct.", new HashSet<File>(Arrays.asList(missingFile)), compareDirectories.getNotMatched());
+        final Set<Difference> differences = RecursiveDirectoryComparer.compareDirectories(left, right);
+        assertFalse("Right should contain extra file.", differences.isEmpty());
+        assertEquals("Missing file not correct.", new HashSet<Difference>(Arrays.asList(new Difference(null, new File(right, "/file.file"), DifferenceType.MISSING))), differences);
     }
 
     @Test
@@ -65,8 +68,9 @@ public class TestRecursiveDirectoryComparer {
         final File left = new File(baseDir, "/base0/containsFile");
         final File right = new File(baseDir, "/base1/differentFile");
 
-        final ComparisonResult compareDirectories = RecursiveDirectoryComparer.compareDirectories(left, right);
-        assertFalse("File contents should not match.", compareDirectories.isEqual());
+        final Set<Difference> differences = RecursiveDirectoryComparer.compareDirectories(left, right);
+        assertEquals("File contents should not match.", new HashSet<Difference>(Arrays.asList(new Difference(new File(left, "/file.file"), new File(right, "/file.file"), DifferenceType.CHECKSUM))),
+                differences);
     }
 
 }
