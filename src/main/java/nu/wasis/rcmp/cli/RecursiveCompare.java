@@ -52,7 +52,7 @@ public class RecursiveCompare {
             OUT.println("Directories do not match.");
             OUT.println("Differences:");
             for (final Difference diff : differences) {
-                OUT.println(diff);
+                OUT.println("\t" + diff);
             }
         }
     }
